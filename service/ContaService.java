@@ -1,0 +1,94 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package service;
+
+import exception.SaldoInsuficienteException;
+import model.Conta;
+import model.ContaCorrente;
+
+import java.io.IOException;
+import java.nio.file.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ *
+ * @author juliana
+ */
+public class ContaService {
+    
+
+
+    public List<ContaCorrente> lerConta(String caminho) throws IOException {
+        try{
+            Path arquivo = Paths.get(caminho);
+            //lista para acessar o caminho conta.txt
+            List<String> linhas = Files.readAllLines(arquivo);
+            //lista para criar contascorrentes
+            List<ContaCorrente> contas = new ArrayList<>();
+
+            //int numero, String titular, double saldo
+             for (String linha : linhas) {
+           
+            String[] partes = linha.split(",");
+               
+            int numero = Integer.parseInt(partes[0].trim());
+            String titular = partes[1].trim();
+            double saldo = Double.parseDouble(partes[2].trim());
+
+            ContaCorrente conta = new ContaCorrente(numero, titular, saldo);
+            contas.add(conta);
+        }
+        return contas;
+            
+
+
+        }catch(IOException e){
+            System.out.println("Erro ao ler arquivo");
+            throw e;
+        }
+    }
+
+    public void sacarValor(List<ContaCorrente> contas, double valor) throws SaldoInsuficienteException {
+    for (ContaCorrente conta : contas) {
+        conta.sacar(valor);
+    }
+    }
+
+    public void atualizarConta(List<ContaCorrente> contas, String caminho) throws IOException {
+    Path arquivo = Paths.get(caminho);
+
+    // Limpa o arquivo antes de escrever
+    Files.write(arquivo, new byte[0]);
+
+    for (ContaCorrente conta : contas) {
+        String linha = conta.getNumero() + "," + conta.getTitular() + "," + conta.getSaldo() + "\n";
+        Files.write(arquivo, linha.getBytes(), java.nio.file.StandardOpenOption.APPEND);
+    }
+    }
+    
+
+
+
+
+
+
+    
+    //filtragem com stream
+    public List<ContaCorrente> contas1000(String caminho) throws IOException{
+        ContaService cs = new ContaService();
+       
+        List<ContaCorrente> todas = lerConta("conta.txt");
+
+        List<ContaCorrente> filt = todas.stream()
+                            .filter(c -> c.getSaldo() > 1000)
+                            .collect(Collectors.toList());
+        return filt;
+
+    }
+
+
+}
