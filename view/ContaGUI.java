@@ -5,13 +5,20 @@
 package view;
 
 import exception.SaldoInsuficienteException;
+import java.awt.GridLayout;
 import model.ContaCorrente;
 import service.ContaService;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
 
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 
 
 /**
@@ -26,37 +33,41 @@ public class ContaGUI extends javax.swing.JFrame {
     
     private ContaCorrente contas;
     private ContaService contaService;
-    
+    ContaService cs = new ContaService();
+    private List<ContaCorrente> contasFiltradas = new ArrayList<>();
     public ContaGUI() {
-        
+        this.contaService = new ContaService(); 
+        this.cs = new ContaService();
         initComponents();
         carregarDados();
         
     }
     
     private void carregarDados() {
-        
-    ContaService cs = new ContaService();
-    try {
-        List<ContaCorrente> conta = cs.lerConta("conta.txt");
-        // Variável do tipo lista
-        txtAreaArquivo.setText(""); // limpa antes de carregar
+       try {
+        contasFiltradas = cs.lerConta("conta.txt");
 
-        // Percorre todas as contas
-        for (ContaCorrente contas : conta) {
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
+        for (ContaCorrente c : contasFiltradas) {
+            model.addElement(c.getNumero() + " - " + c.getTitular());
+        }
+        cmbContas.setModel(model);
+        cmbContas.setSelectedIndex(-1);
+
+        txtAreaArquivo.setText("");
+        for (ContaCorrente c : contasFiltradas) {
             txtAreaArquivo.append(
-                "Número: " + contas.getNumero() + 
-                " | Titular: " + contas.getTitular() +
-                " | Saldo: R$ " + String.format("%.2f", contas.getSaldo()) + "\n"
+                "Número: " + c.getNumero() +
+                " | Titular: " + c.getTitular() +
+                " | Saldo: R$ " + String.format("%.2f", c.getSaldo()) + "\n"
             );
         }
 
-        JOptionPane.showMessageDialog(null, "Contas carregadas com sucesso!");
-
     } catch (IOException e) {
-        JOptionPane.showMessageDialog(null, "Erro ao acessar arquivo: " + e.getMessage(),
+        JOptionPane.showMessageDialog(this, "Erro ao acessar arquivo: " + e.getMessage(),
                                       "Erro", JOptionPane.ERROR_MESSAGE);
     }
+     
 }
 
     /**
@@ -74,11 +85,14 @@ public class ContaGUI extends javax.swing.JFrame {
         txtNumero = new javax.swing.JTextField();
         txtTitular = new javax.swing.JTextField();
         txtSaldo = new javax.swing.JTextField();
-        lblSaque = new javax.swing.JLabel();
         txtSaque = new javax.swing.JTextField();
         btnSacar = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         txtAreaArquivo = new javax.swing.JTextArea();
+        cmbContas = new javax.swing.JComboBox<>();
+        btnDeposito = new javax.swing.JButton();
+        txtDeposito = new javax.swing.JTextField();
+        btnAdicionar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("GERENCIADOR DE CONTA BANCÁRIA");
@@ -92,11 +106,27 @@ public class ContaGUI extends javax.swing.JFrame {
         txtNumero.setEditable(false);
 
         txtTitular.setEditable(false);
+        txtTitular.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtTitularActionPerformed(evt);
+            }
+        });
 
         txtSaldo.setEditable(false);
+        txtSaldo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtSaldoActionPerformed(evt);
+            }
+        });
 
-        lblSaque.setText("Valor para saque:");
+        txtSaque.setToolTipText("");
+        txtSaque.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtSaqueActionPerformed(evt);
+            }
+        });
 
+        btnSacar.setBackground(new java.awt.Color(170, 191, 222));
         btnSacar.setText("Sacar");
         btnSacar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -109,79 +139,264 @@ public class ContaGUI extends javax.swing.JFrame {
         txtAreaArquivo.setRows(5);
         jScrollPane1.setViewportView(txtAreaArquivo);
 
+        cmbContas.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Contas" }));
+        cmbContas.setToolTipText("");
+        cmbContas.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbContasActionPerformed(evt);
+            }
+        });
+
+        btnDeposito.setBackground(new java.awt.Color(170, 191, 222));
+        btnDeposito.setText("Depositar");
+        btnDeposito.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDepositoActionPerformed(evt);
+            }
+        });
+
+        txtDeposito.setToolTipText("");
+        txtDeposito.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtDepositoActionPerformed(evt);
+            }
+        });
+
+        btnAdicionar.setBackground(new java.awt.Color(132, 169, 71));
+        btnAdicionar.setText("Adicionar");
+        btnAdicionar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAdicionarActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 427, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(13, 13, 13)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(cmbContas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblNumero, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lblSaldo, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lblTitular, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lblSaque, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(15, 15, 15)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtSaldo, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtNumero, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtTitular, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtSaque, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(btnSacar, javax.swing.GroupLayout.PREFERRED_SIZE, 427, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(18, Short.MAX_VALUE))
+                            .addComponent(btnSacar, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnDeposito, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 353, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtDeposito, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtSaque, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(95, 95, 95))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(btnAdicionar, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(lblNumero, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtNumero, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(lblTitular, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtTitular, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(lblSaldo, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtSaldo, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(12, 12, 12)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtNumero, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblNumero))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtTitular, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblTitular))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtSaldo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblSaldo))
-                .addGap(28, 28, 28)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblSaque)
-                    .addComponent(txtSaque, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(27, 27, 27)
-                .addComponent(btnSacar)
+                .addComponent(cmbContas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(14, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(lblNumero)
+                            .addComponent(lblTitular))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txtTitular, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtNumero, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lblSaldo)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtSaldo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(38, 38, 38)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btnSacar)
+                            .addComponent(txtSaque, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btnDeposito)
+                            .addComponent(txtDeposito, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(36, 36, 36)
+                        .addComponent(btnAdicionar, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSacarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSacarActionPerformed
-        // TODO add your handling code here:
-        try {
-            double valor = Double.parseDouble(txtSaque.getText().trim());
-            contaService.sacarValor(contas, valor);
-            txtSaldo.setText(String.format("%.2f", contas.getSaldo()));
-            txtAreaArquivo.append(String.format("Saque de R$ %.2f realizado com sucesso.\n", valor));
-            contaService.atualizarConta(contas, "conta_atualizada.txt");
-            txtAreaArquivo.append("Dados atualizados salvos em conta_atualizada.txt\n");
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Informe um valor numérico válido para saque.",
-                    "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (SaldoInsuficienteException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(),
-                    "Saldo Insuficiente", JOptionPane.WARNING_MESSAGE);
-            txtAreaArquivo.append("Tentativa de saque inválida: " + ex.getMessage() + "\n");
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "Erro ao salvar dados atualizados: " + ex.getMessage(),
-                    "Erro", JOptionPane.ERROR_MESSAGE);
+    if (contas == null) {
+        JOptionPane.showMessageDialog(this, "Selecione uma conta antes de sacar.",
+                                      "Aviso", JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+
+    try {
+        String texto = txtSaque.getText().trim().replace(",", "."); // aceita vírgula
+        if (texto.isEmpty()) {
+            throw new NumberFormatException();
         }
+
+        double valor = Double.parseDouble(texto);
+
+        if (valor <= 0) {
+            JOptionPane.showMessageDialog(this, "Informe um valor maior que zero.",
+                                          "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        contaService.sacarValor(contas, valor);
+
+        txtSaldo.setText(String.format("%.2f", contas.getSaldo()));
+        txtAreaArquivo.append(String.format("Saque de R$ %.2f realizado com sucesso.\n", valor));
+
+        cs.atualizarConta(contasFiltradas, "conta_atualizada.txt");
+        txtAreaArquivo.append("Dados atualizados salvos em conta_atualizada.txt\n");
+
+    } catch (NumberFormatException ex) {
+        JOptionPane.showMessageDialog(this, "Informe um valor numérico válido para saque.",
+                                      "Erro", JOptionPane.ERROR_MESSAGE);
+    } catch (SaldoInsuficienteException ex) {
+        JOptionPane.showMessageDialog(this, ex.getMessage(),
+                                      "Saldo Insuficiente", JOptionPane.WARNING_MESSAGE);
+        txtAreaArquivo.append("Tentativa de saque inválida: " + ex.getMessage() + "\n");
+    } catch (IOException ex) {
+        JOptionPane.showMessageDialog(this, "Erro ao salvar dados atualizados: " + ex.getMessage(),
+                                      "Erro", JOptionPane.ERROR_MESSAGE);
+    }
     }//GEN-LAST:event_btnSacarActionPerformed
+
+    private void txtSaldoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSaldoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtSaldoActionPerformed
+
+    private void txtTitularActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTitularActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtTitularActionPerformed
+
+    private void cmbContasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbContasActionPerformed
+        int index = cmbContas.getSelectedIndex();
+    if (index >= 0) {
+        contas = contasFiltradas.get(index);  // pega o objeto real
+        txtNumero.setText(String.valueOf(contas.getNumero()));
+        txtTitular.setText(contas.getTitular());
+        txtSaldo.setText(String.format("%.2f", contas.getSaldo()));
+    }
+    }//GEN-LAST:event_cmbContasActionPerformed
+
+    private void btnDepositoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDepositoActionPerformed
+     
+    if (contas == null) {
+        JOptionPane.showMessageDialog(this, "Selecione uma conta primeiro!",
+                                      "Aviso", JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+
+    try {
+        double valor = Double.parseDouble(txtSaque.getText().trim());
+        if (valor <= 0) {
+            JOptionPane.showMessageDialog(this, "Informe um valor maior que zero.",
+                                          "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Atualiza saldo da conta selecionada
+        contas.setSaldo(contas.getSaldo() + valor);
+
+        // Atualiza o campo de saldo na tela
+        txtSaldo.setText(String.format("%.2f", contas.getSaldo()));
+
+        // Atualiza a lista de contas no arquivo
+        cs.atualizarConta(contasFiltradas, "conta_atualizada.txt");
+
+    } catch (NumberFormatException ex) {
+        JOptionPane.showMessageDialog(this, "Informe um valor numérico válido.",
+                                      "Erro", JOptionPane.ERROR_MESSAGE);
+    } catch (IOException ex) {
+        JOptionPane.showMessageDialog(this, "Erro ao salvar dados: " + ex.getMessage(),
+                                      "Erro", JOptionPane.ERROR_MESSAGE);
+    }
+    }//GEN-LAST:event_btnDepositoActionPerformed
+
+    private void txtSaqueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSaqueActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtSaqueActionPerformed
+
+    private void txtDepositoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtDepositoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtDepositoActionPerformed
+
+    private void btnAdicionarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAdicionarActionPerformed
+        // TODO add your handling code here:
+        JDialog dialog = new JDialog(this, "Adicionar Nova Conta", true);
+    dialog.setSize(300, 200);
+    dialog.setLayout(new GridLayout(4, 2, 5, 5));
+
+    JLabel lblNumero = new JLabel("Número:");
+    JTextField txtNumero = new JTextField();
+    JLabel lblTitular = new JLabel("Titular:");
+    JTextField txtTitular = new JTextField();
+    JLabel lblSaldo = new JLabel("Saldo inicial:");
+    JTextField txtSaldo = new JTextField();
+    JButton btnSalvar = new JButton("Salvar");
+
+    dialog.add(lblNumero);
+    dialog.add(txtNumero);
+    dialog.add(lblTitular);
+    dialog.add(txtTitular);
+    dialog.add(lblSaldo);
+    dialog.add(txtSaldo);
+    dialog.add(new JLabel()); // espaço vazio
+    dialog.add(btnSalvar);
+
+    // Ação do botão salvar
+    btnSalvar.addActionListener(e -> {
+        try {
+            int numero = Integer.parseInt(txtNumero.getText().trim());
+            String titular = txtTitular.getText().trim();
+            double saldo = Double.parseDouble(txtSaldo.getText().trim());
+
+            ContaCorrente novaConta = new ContaCorrente(numero, titular, saldo);
+            contasFiltradas.add(novaConta); // adiciona na lista
+            cs.atualizarConta(contasFiltradas, "conta.txt"); // salva no arquivo
+
+            carregarDados(); // atualiza a GUI
+            dialog.dispose(); // fecha o diálogo
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(dialog, "Número ou saldo inválido!", "Erro", JOptionPane.ERROR_MESSAGE);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(dialog, "Erro ao salvar: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    });
+
+    dialog.setLocationRelativeTo(this);
+    dialog.setVisible(true);
+    }//GEN-LAST:event_btnAdicionarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -217,13 +432,16 @@ public class ContaGUI extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAdicionar;
+    private javax.swing.JButton btnDeposito;
     private javax.swing.JButton btnSacar;
+    private javax.swing.JComboBox<String> cmbContas;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblNumero;
     private javax.swing.JLabel lblSaldo;
-    private javax.swing.JLabel lblSaque;
     private javax.swing.JLabel lblTitular;
     private javax.swing.JTextArea txtAreaArquivo;
+    private javax.swing.JTextField txtDeposito;
     private javax.swing.JTextField txtNumero;
     private javax.swing.JTextField txtSaldo;
     private javax.swing.JTextField txtSaque;

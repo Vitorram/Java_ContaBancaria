@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -52,10 +53,14 @@ public class ContaService {
         }
     }
 
-    public void sacarValor(List<ContaCorrente> contas, double valor) throws SaldoInsuficienteException {
-    for (ContaCorrente conta : contas) {
-        conta.sacar(valor);
+    public void sacarValor(ContaCorrente conta, double valor) throws SaldoInsuficienteException {
+    if (valor > conta.getSaldo()) {
+        throw new SaldoInsuficienteException("Saldo insuficiente para saque.");
     }
+    conta.setSaldo(conta.getSaldo() - valor);
+    }
+    public void depositar(ContaCorrente conta, double valor){
+    conta.setSaldo(conta.getSaldo() + valor);
     }
 
     public void atualizarConta(List<ContaCorrente> contas, String caminho) throws IOException {
@@ -68,15 +73,10 @@ public class ContaService {
         String linha = conta.getNumero() + "," + conta.getTitular() + "," + conta.getSaldo() + "\n";
         Files.write(arquivo, linha.getBytes(), java.nio.file.StandardOpenOption.APPEND);
     }
+    
+    
     }
-    
 
-
-
-
-
-
-    
     //filtragem com stream
     public List<ContaCorrente> contas1000(String caminho) throws IOException{
         ContaService cs = new ContaService();
@@ -86,9 +86,18 @@ public class ContaService {
         List<ContaCorrente> filt = todas.stream()
                             .filter(c -> c.getSaldo() > 1000)
                             .collect(Collectors.toList());
+                            
         return filt;
 
     }
+    public Optional<ContaCorrente> maiorConta(String caminho) throws IOException {
+    List<ContaCorrente> todas = lerConta(caminho);
 
+    // Usa reduce para encontrar a conta com maior saldo
+    return todas.stream()
+                .reduce((c1, c2) -> c1.getSaldo() >= c2.getSaldo() ? c1 : c2);
+               
+}
+   
 
 }
