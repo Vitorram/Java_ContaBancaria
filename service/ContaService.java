@@ -11,8 +11,10 @@ import model.ContaCorrente;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -96,8 +98,58 @@ public class ContaService {
     // Usa reduce para encontrar a conta com maior saldo
     return todas.stream()
                 .reduce((c1, c2) -> c1.getSaldo() >= c2.getSaldo() ? c1 : c2);
+
+    
                
 }
-   
+
+    //predicate para filtrar coisas
+
+    //contas acima de 5000 metodo
+    public List<ContaCorrente> contas5000(String caminho) throws IOException {
+    List<ContaCorrente> todas = lerConta(caminho);
+    Predicate<ContaCorrente> saldoAlto = f -> f.getSaldo() > 5000.00; 
+    return todas.stream()
+                .filter(saldoAlto)
+                .collect(Collectors.toList()); // retorna a lista filtrada
+    }
+
+    public List<ContaCorrente> contasPar(String caminho) throws IOException {
+     List<ContaCorrente> todas = lerConta(caminho);
+     Predicate<ContaCorrente> par = f -> f.getNumero() % 2 == 0;
+     return todas.stream()
+            .filter(par)
+            .collect(Collectors.toList());
+
+    }
+
+
+   public List<ContaCorrente> compararN(String caminho) throws IOException {
+    List<ContaCorrente> todas = lerConta(caminho);
+
+    
+    Comparator<ContaCorrente> porSaldoDecrescente = (f1, f2) -> Double.compare(f2.getSaldo(), f1.getSaldo());
+
+    List<ContaCorrente> ordenados = new ArrayList<>(todas);
+    ordenados.sort(porSaldoDecrescente);
+
+    return ordenados;
+    }   
+
+
+    public List<ContaCorrente> compararT(String caminho) throws IOException {
+    List<ContaCorrente> todas = lerConta(caminho);
+
+    Comparator<ContaCorrente> porNome = Comparator.comparing(c -> c.getTitular().toLowerCase());
+
+    List<ContaCorrente> ordenadas = new ArrayList<>(todas);
+    ordenadas.sort(porNome);
+
+    return ordenadas;
+    }
+
+
+
+
 
 }
